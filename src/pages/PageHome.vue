@@ -21,6 +21,7 @@
 
       <div class="col col-shrink">
         <q-btn
+          @click="addNewRing"
           :disable="!newRingContent"
           unelevated
           rounded
@@ -33,79 +34,96 @@
     </div>
     <q-separator class="divider" size="10px" color="grey-2" />
 
-    <q-list>
-         <q-item class="q-py-md">
-           <q-item-section avatar top>
-             <q-avatar size="xl">
-               <img src="https://cdn.quasar.dev/img/avatar2.jpg">
-             </q-avatar>
-           </q-item-section>
+    <q-list separator>
+      <q-item v-for="ring in rings" :key="ring.date" class="q-py-md">
+        <q-item-section avatar top>
+          <q-avatar size="xl">
+            <img src="https://cdn.quasar.dev/img/avatar2.jpg" />
+          </q-avatar>
+        </q-item-section>
 
-           <q-item-section>
-             <q-item-label class="text-subtitle1">
-              <strong>Sarah L</strong>
-              <span class="text-grey-t">@Sarah_l</span>
-             </q-item-label>
+        <q-item-section>
+          <q-item-label class="text-subtitle1">
+            <strong>Sarah L</strong>
+            <span class="text-grey-t">@Sarah_l</span>
+          </q-item-label>
 
-             <q-item-label class="ring-content text-body1">
-               Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-               tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-               quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-               consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-               cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-               proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-             </q-item-label>
-             
-             <div class="ring-icons row justify-between q-mt-sm">
-                <q-btn 
-                flat 
-                round 
-                color="grey"
-                size="sm" 
-                icon="fa-regular fa-comment" />
+          <q-item-label class="ring-content text-body1">
+            {{ ring.content }}
+          </q-item-label>
 
-                <q-btn 
-                flat 
-                round 
-                color="grey"
-                size="sm" 
-                icon="fas fa-retweet" />
+          <div class="ring-icons row justify-between q-mt-sm">
+            <q-btn
+              flat
+              round
+              color="grey"
+              size="sm"
+              icon="fa-regular fa-comment"
+            />
 
-                <q-btn 
-                flat 
-                round 
-                color="grey"
-                size="sm" 
-                icon="far fa-heart" />
+            <q-btn flat round color="grey" size="sm" icon="fas fa-retweet" />
 
-                <q-btn 
-                flat 
-                round 
-                color="grey"
-                size="sm" 
-                icon="fas fa-trash" />
-             </div>
+            <q-btn flat round color="grey" size="sm" icon="far fa-heart" />
 
-           </q-item-section>
+            <q-btn
+              @click="deleteRing(ring)"
+              flat
+              round
+              color="grey"
+              size="sm"
+              icon="fas fa-trash"
+            />
+          </div>
+        </q-item-section>
 
-           <q-item-section side top>
-             1 min ago
-           </q-item-section>
-         </q-item>
-
-        
-
-       </q-list>
+        <q-item-section side top>
+          {{ getRelativeDate(ring.date) }}
+        </q-item-section>
+      </q-item>
+    </q-list>
   </q-page>
 </template>
 
 <script setup>
+import { formatDistance } from "date-fns";
+
 defineOptions({
   name: "PageHome",
   data() {
     return {
       newRingContent: "",
+      rings: [
+        {
+          content:
+            "Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
+          date: 1717805963965,
+        },
+        {
+          content:
+            "Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
+          date: 1717806027894,
+        },
+      ],
     };
+  },
+  methods: {
+    getRelativeDate(value) {
+      return formatDistance(value, new Date());
+    },
+    addNewRing() {
+      let newRing = {
+        content: this.newRingContent,
+        date: Date.now(),
+      };
+      this.rings.unshift(newRing);
+    },
+    deleteRing(ring) {
+      //console.log("Delete Ring ", ring);
+      let dateToDelete = ring.date;
+      let index = this.rings.findIndex((ring) => ring.date === dateToDelete);
+      //console.log("index: ", index);
+      this.rings.splice(index, 1);
+    },
   },
 });
 </script>
