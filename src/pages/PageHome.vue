@@ -98,6 +98,7 @@
 </template>
 
 <script setup>
+import db from "src/boot/firebase";
 import { formatDistance } from "date-fns";
 
 defineOptions({
@@ -106,7 +107,7 @@ defineOptions({
     return {
       newRingContent: "",
       rings: [
-        {
+        /*{
           content:
             "Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
           date: 1717805963965,
@@ -115,7 +116,7 @@ defineOptions({
           content:
             "Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
           date: 1717806027894,
-        },
+        },*/
       ],
     };
   },
@@ -138,6 +139,21 @@ defineOptions({
       //console.log("index: ", index);
       this.rings.splice(index, 1);
     },
+  },
+  mounted() {
+    db.collection("rings").onSnapshot((snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === "added") {
+          console.log("New ring: ", change.doc.data());
+        }
+        if (change.type === "modified") {
+          console.log("Modified ring: ", change.doc.data());
+        }
+        if (change.type === "removed") {
+          console.log("Removed ring: ", change.doc.data());
+        }
+      });
+    });
   },
 });
 </script>

@@ -1,8 +1,4 @@
-import { boot } from "quasar/wrappers";
-import { initializeApp } from "firebase/app";
-import firebase from "firebase/app";
-// import "firebase/analytics";
-// import "firebase/auth";
+import * as firebase from "firebase/app";
 import "firebase/firestore";
 
 const firebaseConfig = {
@@ -14,7 +10,8 @@ const firebaseConfig = {
   appId: "1:1049510915808:web:c9643c7b8c0c1a0c4cea85",
 };
 
-const app = initializeApp(firebaseConfig);
-let db = firebase.firestone();
+firebase.initializeApp(firebaseConfig);
+
+let db = firebase.firestore();
 
 export default db;
