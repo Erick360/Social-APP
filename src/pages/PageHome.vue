@@ -98,7 +98,7 @@
 </template>
 
 <script setup>
-import db from "src/boot/firebase";
+import { db } from "src/boot/firebase";
 import { formatDistance } from "date-fns";
 
 defineOptions({
