@@ -1,6 +1,6 @@
 <template>
   <q-page class="relative-position">
-    <q-scroll-area class="absolute fullscreen">
+    <q-scroll-area class="absolute full-width full-height">
       <div class="q-py-lg q-px-md row items-end q-col-gutter-md">
         <div class="col">
           <q-input
@@ -41,7 +41,7 @@
           enter-active-class="animated fadeIn slow"
           leave-active-class="animated fadeOut slow"
         >
-          <q-item v-for="ring in rings" :key="ring.date" class="ring q-py-md">
+          <q-item v-for="ring in rings" :key="ring.id" class="ring q-py-md">
             <q-item-section avatar top>
               <q-avatar size="xl">
                 <img src="https://cdn.quasar.dev/img/avatar2.jpg" />
@@ -78,7 +78,16 @@
                   icon="fas fa-retweet"
                 />
 
-                <q-btn flat round color="grey" size="sm" icon="far fa-heart" />
+                <q-btn
+                  @click="toggleLiked(ring)"
+                  flat
+                  round
+                  size="sm"
+                  :color="ring.liked ? 'pink' : 'grey'"
+                  :icon="
+                    ring.liked ? 'fa-solid fa-heart' : 'fa-regular fa-heart'
+                  "
+                />
 
                 <q-btn
                   @click="deleteRing(ring)"
@@ -122,38 +131,90 @@ defineOptions({
   },
   methods: {
     getRelativeDate(value) {
-      return formatDistance(value, new Date());
+      const timestamp = Date.now();
+      const relativeDate = formatDistance(timestamp, new Date());
+      return relativeDate;
     },
     addNewRing() {
       let newRing = {
         content: this.newRingContent,
         date: Date.now(),
+        liked: false,
       };
-      this.rings.unshift(newRing);
+      db.collection("rings")
+        .add(newRing)
+        .then((docRef) => {
+          console.log("Document written with ID: ", docRef.id);
+        })
+        .catch((error) => {
+          console.error("Error adding document: ", error);
+        });
+      //this.rings.unshift(newRing);
       this.newRingContent = "";
     },
     deleteRing(ring) {
-      //console.log("Delete Ring ", ring);
+      /*
+      console.log("Delete Ring ", ring);
       let dateToDelete = ring.date;
       let index = this.rings.findIndex((ring) => ring.date === dateToDelete);
-      //console.log("index: ", index);
+      console.log("index: ", index);
       this.rings.splice(index, 1);
+      */
+      db.collection("rings")
+        .doc(ring.id)
+        .delete()
+        .then(() => {
+          console.log("Document successfully deleted!");
+        })
+        .catch((error) => {
+          console.error("Error removing document: ", error);
+        });
+    },
+    toggleLiked(ring) {
+      //console.log("toggleRing");
+      //console.log(ring);
+      db.collection("rings")
+        .doc(ring.id)
+        .update({
+          liked: !ring.liked,
+        })
+        .then(() => {
+          console.log("Document successfully updated!");
+        })
+        .catch((error) => {
+          console.error("Error updating document: ", error);
+        });
     },
   },
   mounted() {
-    db.collection("rings").onSnapshot((snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        if (change.type === "added") {
-          console.log("New ring: ", change.doc.data());
-        }
-        if (change.type === "modified") {
-          console.log("Modified ring: ", change.doc.data());
-        }
-        if (change.type === "removed") {
-          console.log("Removed ring: ", change.doc.data());
-        }
+    db.collection("rings")
+      .orderBy("date")
+      .onSnapshot((snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          const RingChange = change.doc.data();
+          RingChange.id = change.doc.id;
+
+          if (change.type === "added") {
+            console.log("New ring: ", RingChange);
+            this.rings.unshift(RingChange);
+          }
+          if (change.type === "modified") {
+            console.log("Modified ring: ", RingChange);
+            let index = this.rings.findIndex(
+              (ring) => ring.id === RingChange.id
+            );
+            Object.assign(this.rings[index], RingChange);
+          }
+
+          if (change.type === "removed") {
+            console.log("Removed ring: ", RingChange);
+            let index = this.rings.findIndex(
+              (ring) => ring.id === RingChange.id
+            );
+            this.rings.splice(index, 1);
+          }
+        });
       });
-    });
   },
 });
 </script>
